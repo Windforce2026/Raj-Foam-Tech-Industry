@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raj Foam Tech Industries | Sleepyes | Spinelife</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CORE STYLES --- */
+        html { scroll-behavior: smooth; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc;
+            color: #334155;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* --- NAVIGATION STYLES --- */
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- VIEW SWITCHING --- */
+        .view-section { 
+            display: none; 
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        .view-section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- CARD EFFECTS --- */
+        .gamma-card {
+            transition: all 0.3s ease;
+            background: white;
+            border: 1px solid #f1f5f9;
+        }
+        .gamma-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: #cbd5e1;
+        }
+
+        /* --- TOAST NOTIFICATION --- */
+        #toast-notification {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+
+        #toast-notification.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
+
+        /* --- BRAND SPECIFIC UTILS --- */
+        .font-brand { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased">
+
+    <!-- Notification Toast (Hidden by default) -->
+    <div id="toast-notification">Message Sent Successfully!</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            // Assign fallback URLs for key images (Unsplash source provides a suitable random image per topic)
+            const hero = document.querySelector('.aspect-video img');
+            if(hero) hero.dataset.fallback = 'https://source.unsplash.com/800x450/?foam,machinery,factory';
+
+            const corp = document.querySelector('img[alt="Corporate Headquarters"]');
+            if(corp) corp.dataset.fallback = 'https://source.unsplash.com/800x450/?office,building,headquarters';
+
+            // Infrastructure machines (in DOM order)
+            const infraImgs = document.querySelectorAll('#infrastructure .group img');
+            if(infraImgs.length){
+                if(infraImgs[0]) infraImgs[0].dataset.fallback = 'https://source.unsplash.com/600x400/?manufacturing,machine,factory';
+                if(infraImgs[1]) infraImgs[1].dataset.fallback = 'https://source.unsplash.com/600x400/?cnc,machining,contour';
+                if(infraImgs[2]) infraImgs[2].dataset.fallback = 'https://source.unsplash.com/600x400/?industrial,production,factory';
+            }
+
+            const luxury = document.querySelector('img[alt="Luxury Bed"]');
+            if(luxury) luxury.dataset.fallback = 'https://source.unsplash.com/800x450/?bed,mattress,luxury';
+
+            // Sleepyes gallery images: use src identifiers to map fallbacks
+            document.querySelectorAll('img[src*="1631049552057"], img[src*="1631049307264"], img[src*="1595526114035"]').forEach((img, i) => {
+                const fallbacks = ['https://source.unsplash.com/400x300/?mattress,bedding','https://source.unsplash.com/400x300/?bedroom,decor','https://source.unsplash.com/400x300/?sleep,comfort'];
+                img.dataset.fallback = fallbacks[i] || fallbacks[0];
+            });
+
+            // Small accessory thumbnails
+            document.querySelectorAll('img[src*="1582582621959"], img[src*="1631049035182"]').forEach((img, i) => {
+                const falls = ['https://source.unsplash.com/200x200/?portrait,person','https://source.unsplash.com/200x200/?face,portrait'];
+                img.dataset.fallback = falls[i] || falls[0];
+            });
+
+            // Wellness / science images
+            const wellness = document.querySelector('img[alt="Wellness Professional"]');
+            if(wellness) wellness.dataset.fallback = 'https://source.unsplash.com/800x450/?doctor,therapist,professional';
+            const techImg = document.querySelector('#m-science img');
+            if(techImg) techImg.dataset.fallback = 'https://source.unsplash.com/800x450/?wellness,clinic,technology';
+
+            // Attach onerror handlers using data-fallback (override any existing onerror handlers)
+            document.querySelectorAll('img').forEach(function(img){
+                if(img.dataset && img.dataset.fallback){
+                    img.onerror = function(){
+                        this.onerror = null;
+                        this.src = this.dataset.fallback;
+                    };
+                    // If image already failed to load before the handler was attached, swap immediately
+                    if(img.complete && img.naturalWidth === 0){
+                        img.src = img.dataset.fallback;
+                    }
+                }
+            });
+        });
+    </script>
+
+    <!-- ======================================================= -->
+    <!-- VIEW 1: RAJFOAM MAIN (Industrial/Corporate)             -->
+    <!-- ======================================================= -->
+    <div id="view-corporate" class="view-section active">
+        
+        <nav class="fixed w-full z-50 glass-nav top-0 left-0">
+            <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <div class="relative w-10 h-10">
+                        <div class="absolute inset-0 bg-blue-900 rounded-full opacity-20"></div>
+                        <div class="absolute inset-0 flex items-center justify-center font-bold text-red-600 text-xl border-2 border-blue-900 rounded-full">RJ</div>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-slate-900 leading-none text-lg">Rajfoam</h1>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Tech Industries</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex gap-8 text-sm font-medium text-slate-600">
+                    <a href="#about-us" class="hover:text-blue-900 transition">Legacy</a>
+                    <a href="#sectors" class="hover:text-blue-900 transition">Sectors</a>
+                    <a href="#infrastructure" class="hover:text-blue-900 transition">Factory</a>
+                    <a href="#brands" class="hover:text-blue-900 transition">Divisions</a>
+                </div>
+                <button onclick="document.getElementById('contact').scrollIntoView()" class="bg-red-600 text-white px-5 py-2 rounded text-sm font-bold hover:bg-red-700 transition shadow-lg shadow-red-200">Enquire Now</button>
+            </div>
+        </nav>
+
+        <!-- Corporate Hero -->
+        <section class="pt-32 pb-20 px-6 min-h-[90vh] flex items-center bg-slate-50 relative overflow-hidden">
+            <div class="absolute right-0 top-0 w-1/2 h-full bg-blue-50/50 skew-x-12 transform origin-top-right z-0"></div>
+            <div class="max-w-7xl mx-auto w-full grid md:grid-cols-2 gap-12 items-center relative z-10">
+                <div>
+                    <span class="text-blue-600 font-bold tracking-widest text-xs uppercase mb-4 block">Est. 1970 • New Delhi, India</span>
+                    <h2 class="text-5xl md:text-6xl font-extrabold text-slate-900 mb-6 leading-tight">
+                        Pioneering <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500">Polymer Innovation</span>
+                    </h2>
+                    <p class="text-lg text-slate-600 mb-8 max-w-lg leading-relaxed">
+                        From raw industrial foam to premium consumer sleep solutions. We are the manufacturing backbone for India's leading comfort brands and automotive giants.
+                    </p>
+                    <div class="flex gap-4">
+                        <button onclick="document.getElementById('brands').scrollIntoView()" class="bg-red-600 text-white px-8 py-3 rounded font-semibold hover:bg-red-700 transition shadow-md">Explore Brands</button>
+                        <button onclick="document.getElementById('infrastructure').scrollIntoView()" class="border border-slate-300 px-8 py-3 rounded font-semibold hover:bg-white hover:shadow-md transition bg-white/50">Factory Tour</button>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="bg-white p-2 rounded-2xl shadow-2xl transform rotate-1 hover:rotate-0 transition duration-500">
+                        <div class="aspect-video bg-slate-200 rounded-xl overflow-hidden relative group">
+                            <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800" alt="Foam Machinery" class="w-full h-full object-cover" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;800&quot; height=&quot;450&quot; viewBox=&quot;0 0 800 450&quot;><rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;%23f1f5f9&quot;/><text x=&quot;50%&quot; y=&quot;50%&quot; dominant-baseline=&quot;middle&quot; text-anchor=&quot;middle&quot; fill=&quot;%236b7280&quot; font-family=&quot;Arial, Helvetica, sans-serif&quot; font-size=&quot;24&quot;>Image Unavailable</text></svg>';">
+                            <div class="absolute inset-0 bg-blue-900/10 group-hover:bg-transparent transition"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Global Scale Stats -->
+        <section class="bg-blue-900 py-12 px-6 text-white relative overflow-hidden">
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+            <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center relative z-10">
+                <div>
+                    <h3 class="text-4xl font-bold mb-2">50+</h3>
+                    <p class="text-blue-200 text-sm uppercase tracking-wider">Years of Excellence</p>
+                </div>
+                <div>
+                    <h3 class="text-4xl font-bold mb-2">20k</h3>
+                    <p class="text-blue-200 text-sm uppercase tracking-wider">Tons Produced / Year</p>
+                </div>
+                <div>
+                    <h3 class="text-4xl font-bold mb-2">15+</h3>
+                    <p class="text-blue-200 text-sm uppercase tracking-wider">Countries Exported To</p>
+                </div>
+                <div>
+                    <h3 class="text-4xl font-bold mb-2">2M+</h3>
+                    <p class="text-blue-200 text-sm uppercase tracking-wider">Happy Sleepers</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Our Legacy -->
+        <section id="about-us" class="py-24 px-6 bg-white">
+            <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+                <div>
+                    <span class="text-blue-600 font-bold uppercase text-xs tracking-wider">The Rajfoam Story</span>
+                    <h2 class="text-3xl font-bold text-slate-900 mt-2 mb-6">Five Decades of Shaping Comfort</h2>
+                    <p class="text-slate-600 leading-relaxed mb-6">
+                        What started as a small PU foam unit in 1970 has evolved into one of India's largest polymer conglomerates. Raj Foam Industries has been at the forefront of every major foam innovation, from high-resilience automotive seating to the medical-grade memory foam used in our Spinelife series.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-center gap-3 text-slate-700 font-medium"><i class="fas fa-check-circle text-green-500"></i> ISO 9001:2015 Certified Facilities</li>
+                        <li class="flex items-center gap-3 text-slate-700 font-medium"><i class="fas fa-check-circle text-green-500"></i> State-of-the-art German Technology</li>
+                        <li class="flex items-center gap-3 text-slate-700 font-medium"><i class="fas fa-check-circle text-green-500"></i> Zero-Waste Manufacturing Policy</li>
+                    </ul>
+                </div>
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800" class="rounded-2xl shadow-2xl" alt="Corporate Headquarters" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;800&quot; height=&quot;450&quot; viewBox=&quot;0 0 800 450&quot;><rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;%23f1f5f9&quot;/><text x=&quot;50%&quot; y=&quot;50%&quot; dominant-baseline=&quot;middle&quot; text-anchor=&quot;middle&quot; fill=&quot;%236b7280&quot; font-family=&quot;Arial, Helvetica, sans-serif&quot; font-size=&quot;24&quot;>Image Unavailable</text></svg>';">
+                    <div class="absolute -bottom-6 -left-6 bg-white p-6 rounded-xl shadow-lg border-l-4 border-blue-600">
+                        <p class="font-bold text-xl text-slate-900">"Quality First"</p>
+                        <p class="text-sm text-slate-500">Our Founder's Motto</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sectors Served (Industrial) -->
+        <section id="sectors" class="py-20 px-6 bg-slate-50">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h3 class="text-3xl font-bold text-slate-900">Beyond Mattresses</h3>
+                    <p class="text-slate-500 mt-2">Supplying critical components to key industries.</p>
+                </div>
+                <div class="grid md:grid-cols-4 gap-6">
+                    <div class="bg-white p-8 rounded-xl shadow-sm hover:-translate-y-2 transition duration-300">
+                        <i class="fas fa-car text-4xl text-blue-600 mb-6"></i>
+                        <h4 class="font-bold text-lg mb-2">Automotive</h4>
+                        <p class="text-sm text-slate-500">Molded seat cushions and sound insulation for major car manufacturers.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-xl shadow-sm hover:-translate-y-2 transition duration-300">
+                        <i class="fas fa-box text-4xl text-blue-600 mb-6"></i>
+                        <h4 class="font-bold text-lg mb-2">Packaging</h4>
+                        <p class="text-sm text-slate-500">Shock-absorbing foam solutions for fragile electronics and glass.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-xl shadow-sm hover:-translate-y-2 transition duration-300">
+                        <i class="fas fa-volume-mute text-4xl text-blue-600 mb-6"></i>
+                        <h4 class="font-bold text-lg mb-2">Acoustics</h4>
+                        <p class="text-sm text-slate-500">Sound-dampening panels for studios, theaters, and industrial generators.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-xl shadow-sm hover:-translate-y-2 transition duration-300">
+                        <i class="fas fa-shoe-prints text-4xl text-blue-600 mb-6"></i>
+                        <h4 class="font-bold text-lg mb-2">Footwear</h4>
+                        <p class="text-sm text-slate-500">High-density insoles providing comfort for leading shoe brands.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Infrastructure/Factory -->
+        <section id="infrastructure" class="py-24 px-6 bg-white">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex justify-between items-end mb-12">
+                    <div>
+                        <span class="text-blue-600 font-bold uppercase text-xs tracking-wider">Manufacturing Prowess</span>
+                        <h3 class="text-3xl font-bold text-slate-900 mt-2">Inside The Factory</h3>
+                    </div>
+                    <button onclick="document.getElementById('contact').scrollIntoView()" class="hidden md:block text-blue-600 font-bold hover:text-blue-800">View Full Capacity &rarr;</button>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Machine 1 -->
+                    <div class="group relative overflow-hidden rounded-2xl">
+                        <img src="https://images.unsplash.com/photo-1590247813693-5541d1c609fd?auto=format&fit=crop&q=80&w=600" class="w-full h-64 object-cover transition duration-500 group-hover:scale-110" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;600&quot; height=&quot;400&quot; viewBox=&quot;0 0 600 400&quot;><rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;%23f1f5f9&quot;/><text x=&quot;50%&quot; y=&quot;50%&quot; dominant-baseline=&quot;middle&quot; text-anchor=&quot;middle&quot; fill=&quot;%236b7280&quot; font-family=&quot;Arial, Helvetica, sans-serif&quot; font-size=&quot;20&quot;>Image Unavailable</text></svg>';">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
+                            <h4 class="text-white font-bold text-xl">Hennecke Foaming Lines</h4>
+                            <p class="text-slate-300 text-sm mt-2">Precision German engineering for consistent density control.</p>
+                        </div>
+                    </div>
+                    <!-- Machine 2 -->
+                    <!--<div class="group relative overflow-hidden rounded-2xl">
+                        <img src="https://images.unsplash.com/photo-1580983561371-7f1a23d9b33b?auto=format&fit=crop&q=80&w=600" class="w-full h-64 object-cover transition duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
+                            <h4 class="text-white font-bold text-xl">CNC Contouring</h4>
+                            <p class="text-slate-300 text-sm mt-2">3D cutting technology for complex medical shapes (Spinelife).</p>
+                        </div>
+                    </div>-->
+
+                        <div class="group relative overflow-hidden rounded-2xl">
+                        <img src="CNC.png" alt="CNC Contouring" class="w-full h-64 object-cover transition duration-500 group-hover:scale-110" loading="lazy" onerror="this.onerror=null;this.src='https://source.unsplash.com/600x400/?cnc,machining,contour';">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
+                            <h4 class="text-white font-bold text-xl">CNC Contouring</h4>
+                            <p class="text-slate-300 text-sm mt-2">3D cutting technology for complex medical shapes (Spinelife).</p>
+                        </div>
+                    </div>
+
+                    <!-- Machine 3 -->
+                    <div class="group relative overflow-hidden rounded-2xl">
+                        <img src="https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&q=80&w=600" class="w-full h-64 object-cover transition duration-500 group-hover:scale-110" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;600&quot; height=&quot;400&quot; viewBox=&quot;0 0 600 400&quot;><rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;%23f1f5f9&quot;/><text x=&quot;50%&quot; y=&quot;50%&quot; dominant-baseline=&quot;middle&quot; text-anchor=&quot;middle&quot; fill=&quot;%236b7280&quot; font-family=&quot;Arial, Helvetica, sans-serif&quot; font-size=&quot;20&quot;>Image Unavailable</text></svg>';">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
+                            <h4 class="text-white font-bold text-xl">VPF Technology</h4>
+                            <p class="text-slate-300 text-sm mt-2">Variable Pressure Foaming for eco-friendly, zero-emission production.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gateway Section (The Switch) -->
+        <section id="brands" class="py-24 px-6 bg-slate-100">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h3 class="text-3xl font-bold text-slate-900">Our Consumer Divisions</h3>
+                    <p class="text-slate-500 mt-2">We channel our industrial expertise into two distinct consumer brands.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                    <!-- LINK TO SLEEPYES -->
+                    <div onclick="navigateTo('sleepyes')" class="gamma-card group cursor-pointer rounded-3xl p-0 overflow-hidden relative transform hover:-translate-y-2 transition duration-300">
+                        <div class="h-64 bg-blue-600 flex items-center justify-center relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                            <i class="fas fa-moon text-8xl text-white relative z-10 group-hover:scale-110 transition duration-300"></i>
+                        </div>
+                        <div class="p-10">
+                            <h4 class="text-3xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition">Sleepyes</h4>
+                            <p class="text-slate-500 text-base mb-6">Luxury Consumer Bedding. Blue, Red, Yellow Series.</p>
+                            <div class="flex items-center text-blue-600 font-bold text-sm uppercase tracking-wide">
+                                Enter Website <i class="fas fa-external-link-alt ml-2"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- LINK TO SPINELIFE -->
+                    <div onclick="navigateTo('spinelife')" class="gamma-card group cursor-pointer rounded-3xl p-0 overflow-hidden relative transform hover:-translate-y-2 transition duration-300">
+                        <div class="h-64 bg-red-600 flex items-center justify-center relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                            <i class="fas fa-heartbeat text-8xl text-white relative z-10 group-hover:scale-110 transition duration-300"></i>
+                        </div>
+                        <div class="p-10">
+                            <h4 class="text-3xl font-bold text-slate-900 mb-2 group-hover:text-red-600 transition">Spinelife</h4>
+                            <p class="text-slate-500 text-base mb-6">Medical & Orthopedic Solutions. HA10 Technology.</p>
+                            <div class="flex items-center text-red-600 font-bold text-sm uppercase tracking-wide">
+                                Enter Website <i class="fas fa-external-link-alt ml-2"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-20 px-6 bg-slate-900 text-white">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-3xl font-bold mb-8">Partner with Rajfoam</h2>
+                <p class="text-slate-400 mb-12">Looking for bulk industrial foam, OEM partnerships, or full capacity details? Get in touch.</p>
+                <div class="bg-white rounded-2xl p-8 text-left text-slate-800 shadow-2xl">
+                    <h3 class="text-xl font-bold mb-4">B2B Inquiry Form</h3>
+                    <form onsubmit="return handleFormSubmit(event, 'corporate')">
+                        <div class="grid md:grid-cols-2 gap-6 mb-4">
+                            <input id="corp-name" type="text" class="w-full bg-slate-50 border border-slate-200 rounded p-3" placeholder="Company Name" required>
+                            <input id="corp-email" type="email" class="w-full bg-slate-50 border border-slate-200 rounded p-3" placeholder="Official Email" required>
+                        </div>
+                        <div class="mb-4">
+                            <select id="corp-type" class="w-full bg-slate-50 border border-slate-200 rounded p-3">
+                                <option>Automotive Requirements</option>
+                                <option>Packaging Solutions</option>
+                                <option>Furniture / Acoustics</option>
+                                <option>Distributorship</option>
+                            </select>
+                        </div>
+                        <textarea id="corp-msg" class="w-full bg-slate-50 border border-slate-200 rounded p-3 h-32 mb-4" placeholder="Describe your requirements..."></textarea>
+                        <button type="submit" class="w-full bg-blue-900 text-white font-bold py-3 rounded hover:bg-blue-800 transition">Send Request</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Corporate Footer -->
+        <footer class="bg-slate-900 text-slate-300 py-16 border-t border-slate-800">
+            <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-12 mb-12">
+                <!-- Column 1: Brand -->
+                <div>
+                    <div class="flex items-center gap-2 mb-6">
+                        <div class="w-8 h-8 bg-blue-900 rounded-full flex items-center justify-center font-bold text-red-600 border border-blue-800">RJ</div>
+                        <span class="font-bold text-white text-xl">Rajfoam</span>
+                    </div>
+                    <p class="text-sm leading-relaxed text-slate-400">
+                        India's premier polymer manufacturer since 1970. Delivering excellence in industrial foam and consumer sleep solutions.
+                    </p>
+                </div>
+                <!-- Column 2: Links -->
+                <div>
+                    <h4 class="text-white font-bold mb-6">Quick Links</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="#about-us" class="hover:text-blue-400 transition">Our Legacy</a></li>
+                        <li><a href="#infrastructure" class="hover:text-blue-400 transition">Infrastructure</a></li>
+                        <li><a href="#sectors" class="hover:text-blue-400 transition">Industrial Sectors</a></li>
+                        <li><a href="#about-us" class="hover:text-blue-400 transition">Sustainability</a></li>
+                    </ul>
+                </div>
+                <!-- Column 3: Divisions -->
+                <div>
+                    <h4 class="text-white font-bold mb-6">Our Divisions</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="#" onclick="navigateTo('sleepyes')" class="hover:text-blue-400 transition">Sleepyes (Consumer)</a></li>
+                        <li><a href="#" onclick="navigateTo('spinelife')" class="hover:text-blue-400 transition">Spinelife (Medical)</a></li>
+                        <li><a href="#sectors" class="hover:text-blue-400 transition">Industrial OEM</a></li>
+                        <li><a href="#sectors" class="hover:text-blue-400 transition">Automotive</a></li>
+                    </ul>
+                </div>
+                <!-- Column 4: Contact -->
+                <div>
+                    <h4 class="text-white font-bold mb-6">Contact HQ</h4>
+                    <ul class="space-y-3 text-sm text-slate-400">
+                        <li class="flex items-start gap-3"><i class="fas fa-map-marker-alt mt-1 text-blue-500"></i> Plot 45, Industrial Area Phase II, New Delhi</li>
+                        <li class="flex items-center gap-3"><i class="fas fa-phone-alt text-blue-500"></i> +91 98765 43210</li>
+                        <li class="flex items-center gap-3"><i class="fas fa-envelope text-blue-500"></i> info@rajfoamtech.com</li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Bottom Bar -->
+            <div class="max-w-7xl mx-auto px-6 pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-xs text-slate-500">&copy; 2025 Raj Foam Tech Industries. All Rights Reserved. &nbsp;&bull;&nbsp;Made By WINDFORCE DIGITAL</p>
+                <div class="flex gap-6 text-lg">
+                    <a href="#" class="hover:text-white transition"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" class="hover:text-white transition"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="hover:text-white transition"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+
+    <!-- ======================================================= -->
+    <!-- VIEW 2: SLEEPYES (CONSUMER WEBSITE)                     -->
+    <!-- ======================================================= -->
+    <div id="view-sleepyes" class="view-section">
+        
+        <!-- Sleepyes Header -->
+        <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-blue-100 shadow-sm">
+            <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+                <div class="flex items-center gap-3 cursor-pointer group" onclick="navigateTo('corporate')">
+                    <div class="w-8 h-8 rounded-full bg-slate-50 group-hover:bg-blue-50 flex items-center justify-center transition border border-slate-200">
+                        <i class="fas fa-arrow-left text-slate-400 group-hover:text-blue-600"></i>
+                    </div>
+                    <img src="SleepyEx.png" alt="SleepyEx logo" class="w-10 h-10 object-contain rounded" loading="lazy" onerror="this.onerror=null;this.style.display='none'">
+                    <span class="font-brand font-bold text-2xl text-blue-600 italic">Sleepyes<span class="text-blue-300">.</span></span>
+                </div>
+                <div class="hidden md:flex gap-6 text-sm font-semibold text-slate-600">
+                    <a href="#s-collection" class="hover:text-blue-600 transition">Mattresses</a>
+                    <a href="#s-guide" class="hover:text-blue-600 transition">Sleep Guide</a>
+                    <a href="#s-accessories" class="hover:text-blue-600 transition">Accessories</a>
+                </div>
+                <div class="flex gap-4">
+                     <button class="text-slate-500 hover:text-blue-600"><i class="fas fa-search"></i></button>
+                     <button class="text-slate-500 hover:text-blue-600"><i class="fas fa-shopping-cart"></i></button>
+                </div>
+                <button onclick="document.getElementById('sleep-contact').scrollIntoView()" class="hidden md:block bg-blue-600 text-white px-6 py-2 rounded-full font-bold hover:bg-blue-700 transition">Shop Now</button>
+            </div>
+        </nav>
+
+        <!-- Sleepyes Hero -->
+        <header class="bg-gradient-to-b from-blue-50 to-white py-24 px-6">
+            <div class="max-w-7xl mx-auto flex flex-col-reverse md:flex-row items-center gap-16">
+                <div class="md:w-1/2">
+                    <span class="text-blue-500 font-bold text-sm tracking-widest uppercase mb-4 block">Direct from Factory</span>
+                    <h1 class="text-5xl md:text-7xl font-brand font-bold text-slate-900 mb-6 leading-tight">Sleep on <br><span class="text-blue-600">Cloud Nine.</span></h1>
+                    <p class="text-xl text-slate-600 mb-8 leading-relaxed">Experience hotel-grade luxury at manufacturing prices. Featuring our proprietary Cool-Gel Technology and Zero-Motion Transfer.</p>
+                    <div class="flex gap-4">
+                        <button onclick="document.getElementById('s-collection').scrollIntoView()" class="bg-blue-600 text-white px-8 py-4 rounded-full font-bold shadow-lg hover:bg-blue-700 hover:shadow-blue-200 transition">Shop Mattresses</button>
+                        <button onclick="document.getElementById('s-collection').scrollIntoView()" class="flex items-center gap-2 px-6 py-4 font-bold text-slate-600 hover:text-blue-600"><i class="fas fa-play-circle text-2xl"></i> Watch Video</button>
+                    </div>
+                </div>
+                <div class="md:w-1/2 relative">
+                    <div class="absolute inset-0 bg-blue-200 rounded-full blur-3xl opacity-20 transform translate-x-10 translate-y-10"></div>
+                    <img src="https://images.unsplash.com/photo-1505693314120-0d443867891c?auto=format&fit=crop&q=80&w=800" alt="Luxury Bed" class="relative rounded-[2rem] shadow-2xl border-8 border-white w-full" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;800&quot; height=&quot;450&quot; viewBox=&quot;0 0 800 450&quot;><rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;%23f1f5f9&quot;/><text x=&quot;50%&quot; y=&quot;50%&quot; dominant-baseline=&quot;middle&quot; text-anchor=&quot;middle&quot; fill=&quot;%236b7280&quot; font-family=&quot;Arial, Helvetica, sans-serif&quot; font-size=&quot;24&quot;>Image Unavailable</text></svg>';">
+                    <!-- Floating Badge -->
+                    <div class="absolute -bottom-6 left-10 bg-white p-4 rounded-xl shadow-xl flex items-center gap-3 animate-bounce">
+                        <i class="fas fa-star text-yellow-400 text-2xl"></i>
+                        <div>
+                            <p class="font-bold text-slate-900">4.9/5 Rating</p>
+                            <p class="text-xs text-slate-500">Based on 2000+ Reviews</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Why Choose Us Strip -->
+        <section class="py-12 border-y border-slate-100 bg-white">
+            <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div class="p-4">
+                    <i class="fas fa-industry text-3xl text-blue-500 mb-3"></i>
+                    <h4 class="font-bold">Factory Direct</h4>
+                    <p class="text-xs text-slate-500">No middleman markup</p>
+                </div>
+                <div class="p-4">
+                    <i class="fas fa-moon text-3xl text-blue-500 mb-3"></i>
+                    <h4 class="font-bold">100 Night Trial</h4>
+                    <p class="text-xs text-slate-500">Sleep on it worry-free</p>
+                </div>
+                <div class="p-4">
+                    <i class="fas fa-truck text-3xl text-blue-500 mb-3"></i>
+                    <h4 class="font-bold">Free Shipping</h4>
+                    <p class="text-xs text-slate-500">Pan-India delivery</p>
+                </div>
+                <div class="p-4">
+                    <i class="fas fa-shield-alt text-3xl text-blue-500 mb-3"></i>
+                    <h4 class="font-bold">10 Year Warranty</h4>
+                    <p class="text-xs text-slate-500">Guaranteed durability</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sleep Guide (New Section) -->
+        <section id="s-guide" class="py-20 px-6 bg-slate-50">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h3 class="text-3xl font-brand font-bold text-slate-900">Find Your Perfect Match</h3>
+                    <p class="text-slate-500 mt-2">We designed a mattress for every type of sleeper.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <!-- Side Sleeper -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition text-center border-t-4 border-blue-500">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3094/3094851.png" class="w-16 mx-auto mb-4 opacity-70" alt="Side Sleeper">
+                        <h4 class="font-bold text-lg mb-2">Side Sleeper?</h4>
+                        <p class="text-sm text-slate-500 mb-4">You need pressure relief for shoulders and hips.</p>
+                        <button class="text-blue-600 font-bold text-sm">We Recommend: <br><span class="text-lg">Blue Series</span></button>
+                    </div>
+                    <!-- Back Sleeper -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition text-center border-t-4 border-red-500">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3094/3094838.png" class="w-16 mx-auto mb-4 opacity-70" alt="Back Sleeper">
+                        <h4 class="font-bold text-lg mb-2">Back Sleeper?</h4>
+                        <p class="text-sm text-slate-500 mb-4">You need firm support to maintain spine alignment.</p>
+                        <button class="text-red-600 font-bold text-sm">We Recommend: <br><span class="text-lg">Red Series</span></button>
+                    </div>
+                    <!-- Combo Sleeper -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition text-center border-t-4 border-yellow-500">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3094/3094873.png" class="w-16 mx-auto mb-4 opacity-70" alt="Combo Sleeper">
+                        <h4 class="font-bold text-lg mb-2">Toss & Turn?</h4>
+                        <p class="text-sm text-slate-500 mb-4">You need bounce and responsiveness.</p>
+                        <button class="text-yellow-600 font-bold text-sm">We Recommend: <br><span class="text-lg">Yellow Series</span></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Collection -->
+        <section id="s-collection" class="py-20 px-6 bg-white">
+            <div class="max-w-7xl mx-auto">
+                <h3 class="text-3xl font-brand font-bold text-center mb-12">The 2025 Collection</h3>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Blue Series -->
+                    <div class="group rounded-3xl overflow-hidden border border-slate-100 hover:shadow-2xl transition duration-300">
+                        <div class="relative h-64 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1631049552057-403cdb8f0658?auto=format&fit=crop&q=80&w=400" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;400&quot; height=&quot;300&quot; viewBox=&quot;0 0 400 300&quot;><rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;%23f1f5f9&quot;/><text x=&quot;50%&quot; y=&quot;50%&quot; dominant-baseline=&quot;middle&quot; text-anchor=&quot;middle&quot; fill=&quot;%236b7280&quot; font-family=&quot;Arial, Helvetica, sans-serif&quot; font-size=&quot;18&quot;>Image Unavailable</text></svg>';">
+                            <div class="absolute top-4 left-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">BEST SELLER</div>
+                        </div>
+                        <div class="p-8">
+                            <h4 class="text-2xl font-bold text-slate-900 mb-1">Blue Series</h4>
+                            <p class="text-slate-500 text-sm mb-4">Cloud-Soft Memory Foam</p>
+                            <div class="flex items-end justify-between">
+                                <div>
+                                    <p class="text-xs text-slate-400 line-through">$599</p>
+                                    <p class="text-2xl font-bold text-blue-600">$399</p>
+                                </div>
+                                <button class="bg-slate-900 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-600 transition"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Red Series -->
+                    <div class="group rounded-3xl overflow-hidden border border-slate-100 hover:shadow-2xl transition duration-300">
+                        <div class="relative h-64 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=400" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;400&quot; height=&quot;300&quot; viewBox=&quot;0 0 400 300&quot;><rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;%23f1f5f9&quot;/><text x=&quot;50%&quot; y=&quot;50%&quot; dominant-baseline=&quot;middle&quot; text-anchor=&quot;middle&quot; fill=&quot;%236b7280&quot; font-family=&quot;Arial, Helvetica, sans-serif&quot; font-size=&quot;18&quot;>Image Unavailable</text></svg>';">
+                        </div>
+                        <div class="p-8">
+                            <h4 class="text-2xl font-bold text-slate-900 mb-1">Red Series</h4>
+                            <p class="text-slate-500 text-sm mb-4">Dual-Layer Firm Support</p>
+                            <div class="flex items-end justify-between">
+                                <div>
+                                    <p class="text-xs text-slate-400 line-through">$699</p>
+                                    <p class="text-2xl font-bold text-red-600">$499</p>
+                                </div>
+                                <button class="bg-slate-900 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-600 transition"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Yellow Series -->
+                    <div class="group rounded-3xl overflow-hidden border border-slate-100 hover:shadow-2xl transition duration-300">
+                        <div class="relative h-64 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&q=80&w=400" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;400&quot; height=&quot;300&quot; viewBox=&quot;0 0 400 300&quot;><rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;%23f1f5f9&quot;/><text x=&quot;50%&quot; y=&quot;50%&quot; dominant-baseline=&quot;middle&quot; text-anchor=&quot;middle&quot; fill=&quot;%236b7280&quot; font-family=&quot;Arial, Helvetica, sans-serif&quot; font-size=&quot;18&quot;>Image Unavailable</text></svg>';">
+                            <div class="absolute top-4 left-4 bg-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full">PREMIUM</div>
+                        </div>
+                        <div class="p-8">
+                            <h4 class="text-2xl font-bold text-slate-900 mb-1">Yellow Series</h4>
+                            <p class="text-slate-500 text-sm mb-4">Hybrid Pocket Spring</p>
+                            <div class="flex items-end justify-between">
+                                <div>
+                                    <p class="text-xs text-slate-400 line-through">$899</p>
+                                    <p class="text-2xl font-bold text-yellow-600">$699</p>
+                                </div>
+                                <button class="bg-slate-900 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-yellow-500 transition"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Accessories (New Section) -->
+        <section id="s-accessories" class="py-20 px-6 bg-blue-900 text-white">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/3">
+                    <h3 class="text-3xl font-bold mb-4">Complete Your Setup</h3>
+                    <p class="text-blue-200 mb-8">Don't stop at the mattress. Upgrade your entire sleep environment with our cooling accessories.</p>
+                    <button class="bg-white text-blue-900 px-6 py-3 rounded-full font-bold hover:bg-blue-50">View Accessories</button>
+                </div>
+                <div class="md:w-2/3 grid grid-cols-2 gap-6">
+                    <div class="bg-white/10 p-6 rounded-2xl backdrop-blur-sm hover:bg-white/20 transition cursor-pointer">
+                        <img src="https://images.unsplash.com/photo-1582582621959-48d27397dc69?auto=format&fit=crop&q=80&w=200" class="w-16 h-16 rounded-lg mb-4 object-cover" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;200&quot; height=&quot;200&quot; viewBox=&quot;0 0 200 200&quot;><rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;%23f1f5f9&quot;/><text x=&quot;50%&quot; y=&quot;50%&quot; dominant-baseline=&quot;middle&quot; text-anchor=&quot;middle&quot; fill=&quot;%236b7280&quot; font-family=&quot;Arial, Helvetica, sans-serif&quot; font-size=&quot;14&quot;>Image Unavailable</text></svg>';">
+                        <h4 class="font-bold">Gel Pillows</h4>
+                        <p class="text-xs text-blue-200">From $49</p>
+                    </div>
+                    <div class="bg-white/10 p-6 rounded-2xl backdrop-blur-sm hover:bg-white/20 transition cursor-pointer">
+                        <img src="protectors.png" alt="Protectors" class="w-16 h-16 rounded-lg mb-4 object-cover" loading="lazy" onerror="this.onerror=null;this.src='https://source.unsplash.com/200x200/?mattress,protector';">
+                        <h4 class="font-bold">Protectors</h4>
+                        <p class="text-xs text-blue-200">From $29</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sleepyes Order Enquiry Form (New Added Section) -->
+        <section id="sleep-contact" class="py-20 px-6 bg-white">
+            <div class="max-w-3xl mx-auto text-center">
+                <h3 class="text-3xl font-brand font-bold text-slate-900 mb-4">Ready to Order?</h3>
+                <p class="text-slate-500 mb-10">Send us an enquiry and our sleep experts will help you choose the right mattress size and firmness.</p>
+                
+                <div class="bg-slate-50 p-8 rounded-3xl shadow-lg text-left border border-slate-100">
+                    <form onsubmit="return handleFormSubmit(event, 'sleepyes')">
+                        <div class="grid md:grid-cols-2 gap-6 mb-4">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Your Name</label>
+                                <input id="sleep-name" type="text" class="w-full bg-white border border-slate-200 rounded-lg p-3 focus:outline-none focus:border-blue-500" placeholder="John Doe" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Phone Number</label>
+                                <input id="sleep-phone" type="tel" class="w-full bg-white border border-slate-200 rounded-lg p-3 focus:outline-none focus:border-blue-500" placeholder="+91 98765..." required>
+                            </div>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6 mb-4">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Interested In</label>
+                                <select id="sleep-interest" class="w-full bg-white border border-slate-200 rounded-lg p-3 focus:outline-none focus:border-blue-500">
+                                    <option>Blue Series (Soft)</option>
+                                    <option>Red Series (Firm)</option>
+                                    <option>Yellow Series (Hybrid)</option>
+                                    <option>Accessories</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Size Requirement</label>
+                                <select id="sleep-size" class="w-full bg-white border border-slate-200 rounded-lg p-3 focus:outline-none focus:border-blue-500">
+                                    <option>King (78x72)</option>
+                                    <option>Queen (78x60)</option>
+                                    <option>Single (78x36)</option>
+                                    <option>Custom Size</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Message / Address</label>
+                            <textarea id="sleep-msg" class="w-full bg-white border border-slate-200 rounded-lg p-3 h-24 focus:outline-none focus:border-blue-500" placeholder="Please include delivery location..."></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">Send Enquiry</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <footer class="bg-white text-slate-600 py-12 border-t border-slate-200">
+            <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8 mb-8 text-sm">
+                <div>
+                    <h5 class="font-bold text-slate-900 mb-4">Sleepyes.</h5>
+                    <p>Part of the Rajfoam Tech Family.</p>
+                </div>
+                <div>
+                    <h5 class="font-bold text-slate-900 mb-4">Shop</h5>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-blue-600">Mattresses</a></li>
+                        <li><a href="#" class="hover:text-blue-600">Pillows</a></li>
+                        <li><a href="#" class="hover:text-blue-600">Bundles</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-bold text-slate-900 mb-4">Support</h5>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-blue-600">Help Center</a></li>
+                        <li><a href="#" class="hover:text-blue-600">Returns</a></li>
+                        <li><a href="#" class="hover:text-blue-600">Warranty</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-bold text-slate-900 mb-4">Stay in the loop</h5>
+                    <div class="flex"><input placeholder="Email" class="border p-2 rounded-l w-full"><button class="bg-slate-900 text-white px-3 rounded-r">OK</button></div>
+                </div>
+            </div>
+            <p class="text-center text-xs text-slate-400">© 2025 Sleepyes Inc. &nbsp;•&nbsp; Made By WINDFORCE DIGITAL</p>
+        </footer>
+    </div>
+
+
+    <!-- ======================================================= -->
+    <!-- VIEW 3: SPINELIFE (MEDICAL WEBSITE)                     -->
+    <!-- ======================================================= -->
+    <div id="view-spinelife" class="view-section">
+        
+        <!-- Spinelife Header -->
+        <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-red-50 shadow-sm">
+            <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+                <div class="flex items-center gap-3 cursor-pointer group" onclick="navigateTo('corporate')">
+                    <div class="w-8 h-8 rounded-full bg-slate-50 group-hover:bg-red-50 flex items-center justify-center transition border border-slate-200">
+                        <i class="fas fa-arrow-left text-slate-400 group-hover:text-red-600"></i>
+                    </div>
+                    <img src="SpineLife.png" alt="Spinelife logo" class="w-10 h-10 object-contain rounded" loading="lazy" onerror="this.onerror=null;this.style.display='none'">
+                    <span class="font-brand font-bold text-2xl text-slate-800 tracking-tight">spine<span class="text-red-600">life</span></span>
+                </div>
+                <div class="hidden md:flex gap-6 text-sm font-semibold text-slate-600">
+                    <a href="#m-solutions" class="hover:text-red-600 transition">Solutions</a>
+                    <a href="#m-science" class="hover:text-red-600 transition">Science</a>
+                    <a href="#m-testimonials" class="hover:text-red-600 transition">Patients</a>
+                </div>
+                <button onclick="document.getElementById('spine-contact').scrollIntoView()" class="border-2 border-red-600 text-red-600 px-6 py-2 rounded-lg font-bold hover:bg-red-600 hover:text-white transition">Book Consult</button>
+            </div>
+        </nav>
+
+        <!-- Medical Hero -->
+        <header class="bg-white py-20 px-6 relative overflow-hidden">
+            <!-- Background Pattern -->
+            <div class="absolute inset-0 opacity-5 bg-[radial-gradient(#ef4444_1px,transparent_1px)] [background-size:20px_20px]"></div>
+            
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16 relative z-10">
+                <div class="md:w-1/2">
+                    <div class="inline-flex items-center gap-2 bg-red-50 border border-red-100 text-red-600 px-4 py-1 rounded-full text-xs font-bold mb-6">
+                        <i class="fas fa-check-circle"></i> ISO 13485 CERTIFIED
+                    </div>
+                    <h1 class="text-5xl font-brand font-bold text-slate-900 mb-6 leading-tight">Prescribed Comfort for <br><span class="text-red-600">Chronic Relief.</span></h1>
+                    <p class="text-lg text-slate-600 mb-8">Spinelife uses HA10™ technology to correct spinal alignment during sleep, recommended for Spondylitis and Sciatica patients.</p>
+                    <div class="flex gap-4">
+                        <button onclick="document.getElementById('m-solutions').scrollIntoView()" class="bg-red-600 text-white px-8 py-3 rounded-lg font-bold shadow-lg hover:bg-red-700 transition">View Products</button>
+                        <button class="flex items-center gap-2 text-slate-600 font-bold hover:text-red-600"> <i class="fas fa-file-medical-alt"></i> Download Brochure</button>
+                    </div>
+                </div>
+                <div class="md:w-1/2 relative">
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-red-50 rounded-full blur-3xl -z-10"></div>
+                    <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=800" alt="Wellness Professional" class="rounded-2xl shadow-xl border-8 border-white" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;800&quot; height=&quot;450&quot; viewBox=&quot;0 0 800 450&quot;><rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;%23f1f5f9&quot;/><text x=&quot;50%&quot; y=&quot;50%&quot; dominant-baseline=&quot;middle&quot; text-anchor=&quot;middle&quot; fill=&quot;%236b7280&quot; font-family=&quot;Arial, Helvetica, sans-serif&quot; font-size=&quot;24&quot;>Image Unavailable</text></svg>';">
+                </div>
+            </div>
+        </header>
+
+        <!-- Pain Diagnosis (New Section) -->
+        <section class="py-12 bg-slate-900 text-white">
+            <div class="max-w-7xl mx-auto px-6">
+                <p class="text-center text-slate-400 text-sm mb-8 uppercase tracking-widest">Identify Your Pain Point</p>
+                <div class="grid md:grid-cols-4 gap-4 text-center">
+                    <div class="p-6 bg-white/5 rounded-xl hover:bg-white/10 transition cursor-pointer border border-white/5 hover:border-red-500">
+                        <div class="w-2 h-2 bg-red-500 rounded-full mx-auto mb-2"></div>
+                        <h4 class="font-bold">Cervical</h4>
+                        <p class="text-xs text-slate-400 mt-1">Neck & Upper Back</p>
+                    </div>
+                    <div class="p-6 bg-white/5 rounded-xl hover:bg-white/10 transition cursor-pointer border border-white/5 hover:border-red-500">
+                        <div class="w-2 h-2 bg-red-500 rounded-full mx-auto mb-2"></div>
+                        <h4 class="font-bold">Lumbar</h4>
+                        <p class="text-xs text-slate-400 mt-1">Lower Back Pain</p>
+                    </div>
+                    <div class="p-6 bg-white/5 rounded-xl hover:bg-white/10 transition cursor-pointer border border-white/5 hover:border-red-500">
+                        <div class="w-2 h-2 bg-red-500 rounded-full mx-auto mb-2"></div>
+                        <h4 class="font-bold">Sciatica</h4>
+                        <p class="text-xs text-slate-400 mt-1">Hip & Leg Nerves</p>
+                    </div>
+                    <div class="p-6 bg-white/5 rounded-xl hover:bg-white/10 transition cursor-pointer border border-white/5 hover:border-red-500">
+                        <div class="w-2 h-2 bg-red-500 rounded-full mx-auto mb-2"></div>
+                        <h4 class="font-bold">Post-Op</h4>
+                        <p class="text-xs text-slate-400 mt-1">Surgical Recovery</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solutions Grid -->
+        <section id="m-solutions" class="py-20 px-6 bg-white">
+            <div class="max-w-7xl mx-auto">
+                <h3 class="text-3xl font-brand font-bold text-center text-slate-900 mb-12">Targeted Medical Solutions</h3>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Blood Circulatory -->
+                    <div class="border border-slate-100 p-8 rounded-xl hover:border-red-200 hover:shadow-lg transition group bg-white">
+                        <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center text-red-600 mb-6 group-hover:bg-red-600 group-hover:text-white transition">
+                            <i class="fas fa-heartbeat text-2xl"></i>
+                        </div>
+                        <h4 class="text-xl font-bold mb-2">Circu-Flow™</h4>
+                        <p class="text-slate-500 text-sm leading-relaxed mb-4">Engineered surface patterns designed to improve blood circulation, reducing numbness during sleep.</p>
+                        <a href="#" class="text-red-600 font-bold text-sm hover:underline">View Specs</a>
+                    </div>
+                    <!-- Shield -->
+                    <div class="border border-slate-100 p-8 rounded-xl hover:border-red-200 hover:shadow-lg transition group bg-white">
+                        <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center text-red-600 mb-6 group-hover:bg-red-600 group-hover:text-white transition">
+                            <i class="fas fa-shield-virus text-2xl"></i>
+                        </div>
+                        <h4 class="text-xl font-bold mb-2">Medi-Shield</h4>
+                        <p class="text-slate-500 text-sm leading-relaxed mb-4">Silver-ion infused fabric that actively kills 99.9% of bacteria and allergens. Safe for asthma patients.</p>
+                        <a href="#" class="text-red-600 font-bold text-sm hover:underline">View Specs</a>
+                    </div>
+                    <!-- Ortho -->
+                    <div class="border border-slate-100 p-8 rounded-xl hover:border-red-200 hover:shadow-lg transition group bg-white">
+                        <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center text-red-600 mb-6 group-hover:bg-red-600 group-hover:text-white transition">
+                            <i class="fas fa-bone text-2xl"></i>
+                        </div>
+                        <h4 class="text-xl font-bold mb-2">Ortho-Core</h4>
+                        <p class="text-slate-500 text-sm leading-relaxed mb-4">High density HA10 foam provides rigid support to correct spinal curvature and reduce chronic pain.</p>
+                        <a href="#" class="text-red-600 font-bold text-sm hover:underline">View Specs</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Science / Tech -->
+        <section id="m-science" class="py-20 px-6 bg-slate-50">
+            <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=800" class="rounded-2xl shadow-xl grayscale hover:grayscale-0 transition duration-500" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;800&quot; height=&quot;450&quot; viewBox=&quot;0 0 800 450&quot;><rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;%23f1f5f9&quot;/><text x=&quot;50%&quot; y=&quot;50%&quot; dominant-baseline=&quot;middle&quot; text-anchor=&quot;middle&quot; fill=&quot;%236b7280&quot; font-family=&quot;Arial, Helvetica, sans-serif&quot; font-size=&quot;24&quot;>Image Unavailable</text></svg>';">
+                    <div class="absolute -bottom-6 -right-6 bg-white p-6 rounded-xl shadow-lg border border-slate-100">
+                         <h4 class="font-bold text-4xl text-red-600">HA10</h4>
+                         <p class="text-xs font-bold text-slate-500">PATENTED TECH</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-3xl font-brand font-bold mb-6">The Science of HA10™</h3>
+                    <p class="text-slate-600 mb-6 leading-relaxed">Most mattresses sag over time, worsening back pain. Spinelife's HA10™ (High-Alignment) Core is a hyper-dense polymer structure that resists compression.</p>
+                    <div class="space-y-4">
+                        <div class="flex gap-4 items-start">
+                            <i class="fas fa-check text-green-500 mt-1"></i>
+                            <p class="text-sm text-slate-600"><strong>Zero-Sag Guarantee:</strong> Maintains 98% of shape for 15 years.</p>
+                        </div>
+                        <div class="flex gap-4 items-start">
+                            <i class="fas fa-check text-green-500 mt-1"></i>
+                            <p class="text-sm text-slate-600"><strong>Heat Dispersion:</strong> Open-cell structure prevents heat buildup.</p>
+                        </div>
+                        <div class="flex gap-4 items-start">
+                            <i class="fas fa-check text-green-500 mt-1"></i>
+                            <p class="text-sm text-slate-600"><strong>Doctor Approved:</strong> Tested in clinical trials.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials (New) -->
+        <section id="m-testimonials" class="py-20 px-6 bg-white">
+            <div class="max-w-7xl mx-auto">
+                <h3 class="text-2xl font-bold text-center mb-12">Patient Stories</h3>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-slate-50 p-8 rounded-2xl relative">
+                        <i class="fas fa-quote-right absolute top-6 right-6 text-slate-200 text-6xl -z-10"></i>
+                        <p class="text-slate-600 italic mb-6">"After my slip disc surgery, sleeping was a nightmare. My physio recommended Spinelife, and the difference was immediate. The support is firm but not hard."</p>
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-slate-300 rounded-full"></div>
+                            <div>
+                                <p class="font-bold text-sm">Rajesh K.</p>
+                                <p class="text-xs text-slate-500">Recovering Patient</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 p-8 rounded-2xl relative">
+                        <i class="fas fa-quote-right absolute top-6 right-6 text-slate-200 text-6xl -z-10"></i>
+                        <p class="text-slate-600 italic mb-6">"I work at a desk all day and have chronic lower back pain. This mattress forces my posture into alignment while I sleep. Waking up pain-free is a blessing."</p>
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-slate-300 rounded-full"></div>
+                            <div>
+                                <p class="font-bold text-sm">Anita S.</p>
+                                <p class="text-xs text-slate-500">IT Professional</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Clinical Stats (New Content) -->
+        <section class="py-16 bg-red-900 text-white">
+            <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div>
+                    <h4 class="text-4xl font-bold mb-2">94%</h4>
+                    <p class="text-red-200 text-sm">Pain Reduction reported by patients</p>
+                </div>
+                <div>
+                    <h4 class="text-4xl font-bold mb-2">15k+</h4>
+                    <p class="text-red-200 text-sm">Orthopedic Prescriptions</p>
+                </div>
+                <div>
+                    <h4 class="text-4xl font-bold mb-2">ISO</h4>
+                    <p class="text-red-200 text-sm">13485 Medical Device Certified</p>
+                </div>
+                <div>
+                    <h4 class="text-4xl font-bold mb-2">10 Yr</h4>
+                    <p class="text-red-200 text-sm">Shape Retention Guarantee</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Medical FAQ (New Content) -->
+        <section class="py-20 px-6 bg-slate-50">
+            <div class="max-w-3xl mx-auto">
+                <h3 class="text-2xl font-bold text-center mb-10">Common Questions</h3>
+                <div class="space-y-4">
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <h5 class="font-bold text-slate-900 mb-2">Is this suitable for post-surgery recovery?</h5>
+                        <p class="text-sm text-slate-600">Yes, the Ortho-Core series provides the rigid stability often required after spinal procedures. However, we always recommend consulting your surgeon first.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <h5 class="font-bold text-slate-900 mb-2">How does HA10 differ from memory foam?</h5>
+                        <p class="text-sm text-slate-600">Standard memory foam sinks and traps heat. HA10 is a high-resilience polymer that pushes back against weight to keep the spine neutral and has open cells for cooling.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <h5 class="font-bold text-slate-900 mb-2">Can I claim medical insurance?</h5>
+                        <p class="text-sm text-slate-600">Spinelife mattresses are classified as orthopedic aids. Check with your insurance provider regarding coverage for prescribed medical devices.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Spinelife Contact Form -->
+        <section id="spine-contact" class="py-20 px-6 bg-white">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-3xl font-bold mb-8">Consult a Sleep Expert</h2>
+                <div class="bg-slate-50 p-8 rounded-2xl text-left shadow-lg border border-slate-200">
+                    <form onsubmit="return handleFormSubmit(event, 'spinelife')">
+                        <div class="grid md:grid-cols-2 gap-6 mb-4">
+                            <input id="spine-name" type="text" class="w-full border border-slate-300 rounded p-3" placeholder="Name" required>
+                            <input id="spine-phone" type="text" class="w-full border border-slate-300 rounded p-3" placeholder="Phone" required>
+                        </div>
+                        <button type="submit" class="w-full bg-red-600 text-white font-bold py-3 rounded hover:bg-red-700 transition">Request Consultation</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Spinelife Detailed Footer -->
+        <footer class="bg-white border-t border-slate-200 pt-16 pb-8 text-slate-600">
+            <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="font-brand font-bold text-xl text-slate-800">spine<span class="text-red-600">life</span></span>
+                    </div>
+                    <p class="text-sm leading-relaxed mb-4">
+                        Dedicated to spinal health and recovery. Engineered in collaboration with leading physiotherapists.
+                    </p>
+                    <div class="flex gap-4 text-slate-400">
+                        <a href="#" class="hover:text-red-600"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="hover:text-red-600"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="hover:text-red-600"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h5 class="font-bold text-slate-900 mb-4">Products</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-red-600">Ortho-Core Mattress</a></li>
+                        <li><a href="#" class="hover:text-red-600">Cervical Pillows</a></li>
+                        <li><a href="#" class="hover:text-red-600">Lumbar Cushions</a></li>
+                        <li><a href="#" class="hover:text-red-600">Hospital Beds</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-bold text-slate-900 mb-4">Patients</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-red-600">Find a Clinic</a></li>
+                        <li><a href="#" onclick="document.getElementById('spine-contact').scrollIntoView()" class="hover:text-red-600">Book Consultation</a></li>
+                        <li><a href="#" class="hover:text-red-600">Download Guide</a></li>
+                        <li><a href="#" class="hover:text-red-600">Warranty Registration</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-bold text-slate-900 mb-4">Medical Support</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center gap-2"><i class="fas fa-phone-alt text-red-500"></i> +91 981 008 6154</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-envelope text-red-500"></i> care@spinelife.in</li>
+                        <li class="text-xs text-slate-400 mt-4">Available Mon-Sat, 9AM - 8PM</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-slate-100 pt-8 text-center px-6">
+                <p class="text-xs text-slate-400">© 2025 Spinelife. A Division of Rajfoam Tech Industries. Disclaimer: This product is an aid, not a surgical cure. &nbsp;•&nbsp; Made By WINDFORCE DIGITAL</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- FLOATING ACTION BUTTONS (Phone & WhatsApp)              -->
+    <!-- ======================================================= -->
+    <div class="fixed right-6 bottom-6 z-50 flex flex-col gap-4">
+        <!-- WhatsApp Button -->
+        <a href="https://wa.me/919810086154" target="_blank" class="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform hover:bg-green-600 group relative">
+            <i class="fab fa-whatsapp text-3xl"></i>
+            <!-- Tooltip -->
+            <span class="absolute right-16 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Chat on WhatsApp</span>
+        </a>
+        
+        <!-- Phone Button -->
+        <a href="tel:+919810086154" class="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform hover:bg-blue-700 group relative">
+            <i class="fas fa-phone-alt text-2xl"></i>
+            <!-- Tooltip -->
+            <span class="absolute right-16 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Call Us Now</span>
+        </a>
+    </div>
+
+
+    <!-- ======================================================= -->
+    <!-- LOGIC: View Switching Script                            -->
+    <!-- ======================================================= -->
+    <script>
+        function navigateTo(brandName) {
+            // Hide all
+            document.querySelectorAll('.view-section').forEach(view => {
+                view.classList.remove('active');
+            });
+
+            // Show selected
+            if (brandName === 'sleepyes') {
+                document.getElementById('view-sleepyes').classList.add('active');
+            } else if (brandName === 'spinelife') {
+                document.getElementById('view-spinelife').classList.add('active');
+            } else {
+                document.getElementById('view-corporate').classList.add('active');
+            }
+
+            // Scroll top
+            window.scrollTo(0,0);
+        }
+
+        // SIMULATED FORM SUBMISSION LOGIC
+        function handleFormSubmit(event, type) {
+            event.preventDefault(); // Prevent default reload behavior
+            
+            // 1. Get the button to show feedback
+            const btn = event.target.querySelector('button');
+            const originalText = btn.innerText;
+            
+            // 2. Change state to "Sending..."
+            btn.innerText = 'Sending...';
+            btn.disabled = true;
+            btn.classList.add('opacity-75');
+
+            // 3. Simulate backend delay (2 seconds)
+            setTimeout(() => {
+                // 4. Show success in button
+                btn.innerText = 'Sent Successfully!';
+                btn.classList.remove('bg-blue-900', 'bg-blue-600', 'bg-red-600');
+                btn.classList.add('bg-green-600');
+                
+                // 5. Show Toast Notification
+                const toast = document.getElementById('toast-notification');
+                toast.classList.add('show');
+                
+                // 6. Reset form
+                event.target.reset();
+
+                // 7. Hide Toast & Reset Button after delay
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'bg-green-600');
+                    // Add back original colors
+                    if(type === 'corporate') btn.classList.add('bg-blue-900');
+                    if(type === 'sleepyes') btn.classList.add('bg-blue-600');
+                    if(type === 'spinelife') btn.classList.add('bg-red-600');
+                }, 3000);
+
+            }, 2000);
+
+            // NOTE FOR DEVELOPER:
+            // To make this ACTUALLY send data silently, you need to use a service like EmailJS or Formspree.
+            // Example integration:
+            // emailjs.sendForm('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', event.target)
+            // .then(function() { ... success logic ... });
+            
+            return false;
+        }
+    </script>
+</body>
+</html>
